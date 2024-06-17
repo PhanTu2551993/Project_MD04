@@ -7,8 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.UUID;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "products")
@@ -23,6 +25,7 @@ public class Product {
     private Long productId;
 
     @Column(name = "sku", nullable = false, unique = true, length = 100)
+    @UUID
     private String sku;
 
     @Column(name = "product_name", nullable = false, unique = true, length = 100)
@@ -44,9 +47,9 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at")
+    private Date createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private Date updatedAt;
 }

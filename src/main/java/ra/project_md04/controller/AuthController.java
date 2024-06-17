@@ -10,7 +10,9 @@ import ra.project_md04.constans.EHttpStatus;
 import ra.project_md04.model.dto.request.FormLogin;
 import ra.project_md04.model.dto.request.FormRegister;
 import ra.project_md04.model.dto.response.ResponseWrapper;
+import ra.project_md04.model.entity.Users;
 import ra.project_md04.service.IAuthService;
+import ra.project_md04.service.IUserService;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -18,9 +20,22 @@ import ra.project_md04.service.IAuthService;
 public class AuthController {
 
     private final IAuthService authService;
+    private final IUserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<?> handleLogin(@Valid @RequestBody FormLogin formLogin) {
+        Users user = userService.getUserByUserName(formLogin.getUsername());
+        if (user.getStatus() == Boolean.FALSE) {
+            return new ResponseEntity<>(
+                    ResponseWrapper.builder()
+                            .eHttpStatus(EHttpStatus.FAILED)
+                            .statusCode(HttpStatus.FORBIDDEN.value())
+                            .data("Tài khoản của bạn đã bị khóa")
+                            .build(),
+                    HttpStatus.FORBIDDEN
+            );
+        }
+
         return new ResponseEntity<>(
                 ResponseWrapper.builder()
                         .eHttpStatus(EHttpStatus.SUCCESS)

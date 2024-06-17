@@ -4,9 +4,9 @@ import jakarta.persistence.Entity;
 import lombok.*;
 
 import jakarta.persistence.*;
+import org.hibernate.validator.constraints.UUID;
+
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 
 @NoArgsConstructor
@@ -23,6 +23,7 @@ public class Order {
     private Long orderId;
 
     @Column(name = "serial_number", nullable = false, unique = true, length = 100)
+    @UUID
     private String serialNumber;
 
     @Column(name = "user_id", nullable = false)
