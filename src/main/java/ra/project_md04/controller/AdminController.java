@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import ra.project_md04.model.dto.request.CategoryRequest;
 import ra.project_md04.model.dto.request.PageRequest;
 import ra.project_md04.model.dto.request.ProductRequest;
+import ra.project_md04.model.dto.response.ProductResponse;
+import ra.project_md04.model.dto.response.converter.ProductConverter;
 import ra.project_md04.model.entity.Category;
 import ra.project_md04.model.entity.Product;
 import ra.project_md04.model.entity.Roles;
@@ -17,6 +19,7 @@ import ra.project_md04.service.IRoleService;
 import ra.project_md04.service.IUserService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -108,20 +111,23 @@ public class AdminController {
 	}
 
 	@GetMapping("/products/{productId}")
-	public ResponseEntity<Product> getProductById(@PathVariable Long productId){
+	public ResponseEntity<ProductResponse> getProductById(@PathVariable Long productId) {
 		Product product = productService.findProductById(productId);
 		if (product != null) {
-			return new ResponseEntity<>(product, HttpStatus.OK);
+			ProductResponse productResponse = ProductConverter.toProductResponse(product);
+			return new ResponseEntity<>(productResponse, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
 	@GetMapping("/products")
-	public ResponseEntity<List<Product>> getListProduct(@RequestBody PageRequest pageRequest){
-		List<Product> productsList = productService.getAllProducts( pageRequest.getPage() - 1, pageRequest.getItemPage(), pageRequest.getSortBy(), pageRequest.getDirection()).getContent();
-		return new ResponseEntity<>(productsList, HttpStatus.OK);
+	public ResponseEntity<List<ProductResponse>> getListProduct(@RequestBody PageRequest pageRequest) {
+		List<Product> productsList = productService.getAllProducts(pageRequest.getPage() - 1, pageRequest.getItemPage(), pageRequest.getSortBy(), pageRequest.getDirection()).getContent();
+		List<ProductResponse> productResponses = productsList.stream()
+				.map(ProductConverter::toProductResponse)
+				.collect(Collectors.toList());
+		return new ResponseEntity<>(productResponses, HttpStatus.OK);
 	}
-
 
 }

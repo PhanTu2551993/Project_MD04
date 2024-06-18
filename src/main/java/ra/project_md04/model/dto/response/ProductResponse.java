@@ -1,4 +1,4 @@
-package ra.project_md04.model.dto.request;
+package ra.project_md04.model.dto.response;
 
 import lombok.*;
 
@@ -9,7 +9,8 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-public class ProductRequest {
+public class ProductResponse {
+    private Long productId;
     private String sku;
     private String productName;
     private String description;

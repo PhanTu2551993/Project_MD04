@@ -8,16 +8,24 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ra.project_md04.model.dto.request.AddToCartRequest;
 import ra.project_md04.model.dto.request.AddressRequest;
 import ra.project_md04.model.dto.request.UpdateUserRequest;
-import ra.project_md04.model.entity.Address;
-import ra.project_md04.model.entity.Users;
-import ra.project_md04.repository.IAddressRepository;
-import ra.project_md04.repository.IUserRepository;
+import ra.project_md04.model.dto.request.WishListRequest;
+import ra.project_md04.model.dto.response.AddressResponse;
+import ra.project_md04.model.dto.response.ShoppingCartResponse;
+import ra.project_md04.model.dto.response.WishListResponse;
+import ra.project_md04.model.dto.response.converter.AddressConverter;
+import ra.project_md04.model.dto.response.converter.ShoppingCartConverter;
+import ra.project_md04.model.dto.response.converter.WishListConverter;
+import ra.project_md04.model.entity.*;
+import ra.project_md04.repository.*;
 import ra.project_md04.service.IUserService;
 
 import java.util.Date;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -27,6 +35,12 @@ public class UserServiceImpl implements IUserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     IAddressRepository addressRepository;
+    @Autowired
+    IShoppingCartRepository shoppingCartRepository;
+    @Autowired
+    IProductRepository productRepository;
+    @Autowired
+    IWishListRepository wishListRepository;
 
     @Override
     public Page<Users> getUserPaging(String searchName, Integer page, Integer itemPage, String orderBy, String direction) {
@@ -139,19 +153,6 @@ public class UserServiceImpl implements IUserService {
     public Users getCurrentLoggedInUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findUsersByUsername(username).orElseThrow(() -> new NoSuchElementException("Không có người dùng"));
-    }
-
-    @Override
-    public Address addNewAddress(AddressRequest addressRequest) {
-        Users currentUser = getCurrentLoggedInUser();
-
-        Address newAddress = Address.builder()
-                .users(currentUser)
-                .fullAddress(addressRequest.getFullAddress())
-                .phone(addressRequest.getPhone())
-                .receiveName(addressRequest.getReceiveName())
-                .build();
-        return addressRepository.save(newAddress);
     }
 
 }

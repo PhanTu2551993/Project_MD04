@@ -1,16 +1,12 @@
 package ra.project_md04.model.dto.request;
-
 import lombok.*;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
-public class AddressRequest {
-    private Long addressId;
-    private String fullAddress;
-    private String phone;
-    private String receiveName;
+public class WishListRequest {
+    private Long wishListId;
     private Long userId;
+    private Long productId;
 }

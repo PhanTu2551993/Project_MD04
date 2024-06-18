@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ra.project_md04.model.dto.request.ProductRequest;
+import ra.project_md04.model.dto.response.ProductResponse;
 import ra.project_md04.model.entity.Category;
 import ra.project_md04.model.entity.Product;
 import ra.project_md04.repository.IProductRepository;
