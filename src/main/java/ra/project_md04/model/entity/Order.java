@@ -5,8 +5,10 @@ import lombok.*;
 
 import jakarta.persistence.*;
 import org.hibernate.validator.constraints.UUID;
+import ra.project_md04.constans.OrderStatus;
 
 import java.util.Date;
+import java.util.List;
 
 
 @NoArgsConstructor
@@ -26,14 +28,16 @@ public class Order {
     @UUID
     private String serialNumber;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users users;
 
     @Column(name = "total_price", nullable = false)
     private Double totalPrice;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status;
+    private OrderStatus status;
 
     @Column(name = "receive_name", length = 100)
     private String receiveName;
@@ -52,4 +56,7 @@ public class Order {
 
     @Column(name = "received_at", nullable = false)
     private Date receivedAt;
+
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    private List<OrderDetails> orderDetails;
 }

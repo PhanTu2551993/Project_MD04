@@ -21,6 +21,7 @@ import ra.project_md04.security.principal.UserDetailCustom;
 import ra.project_md04.service.IAuthService;
 import ra.project_md04.service.IRoleService;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -87,6 +88,10 @@ public class AuthServiceImpl implements IAuthService {
                 .username(formRegister.getUsername())
                 .fullName(formRegister.getFullName())
                 .phone(formRegister.getPhone())
+                .status(true)
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .isDeleted(true)
                 .password(passwordEncoder.encode(formRegister.getPassword()))
                 .roles(roles)
                 .build();

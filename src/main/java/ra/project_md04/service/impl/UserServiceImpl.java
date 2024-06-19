@@ -58,16 +58,12 @@ public class UserServiceImpl implements IUserService {
             }
             pageable = PageRequest.of(page, itemPage,sort);
         }else{
-            //khong sap xep
             pageable = PageRequest.of(page, itemPage);
         }
 
-        //xu ly ve tim kiem
         if(searchName!=null && !searchName.isEmpty()){
-            //co tim kiem
             return userRepository.findUsersByUsernameAndSorting(searchName,pageable);
         }else{
-            //khong tim kiem
             return userRepository.findAll(pageable);
         }
     }

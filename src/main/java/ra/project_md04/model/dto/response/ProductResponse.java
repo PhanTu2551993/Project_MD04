@@ -18,6 +18,7 @@ public class ProductResponse {
     private Integer stockQuantity;
     private String image;
     private Long categoryId;
+    private String categoryName;
     private Date createdAt;
     private Date updatedAt;
 }

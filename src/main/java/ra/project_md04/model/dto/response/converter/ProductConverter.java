@@ -14,6 +14,7 @@ public class ProductConverter {
                 .stockQuantity(product.getStockQuantity())
                 .image(product.getImage())
                 .categoryId(product.getCategory().getCategoryId())
+                .categoryName(product.getCategory().getCategoryName())
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();

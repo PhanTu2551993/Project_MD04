@@ -4,19 +4,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ra.project_md04.constans.OrderStatus;
 import ra.project_md04.model.dto.request.CategoryRequest;
 import ra.project_md04.model.dto.request.PageRequest;
 import ra.project_md04.model.dto.request.ProductRequest;
+import ra.project_md04.model.dto.request.UpdateOrderStatusRequest;
+import ra.project_md04.model.dto.response.OrderResponse;
 import ra.project_md04.model.dto.response.ProductResponse;
+import ra.project_md04.model.dto.response.UserResponse;
+import ra.project_md04.model.dto.response.converter.OrderConverter;
 import ra.project_md04.model.dto.response.converter.ProductConverter;
-import ra.project_md04.model.entity.Category;
-import ra.project_md04.model.entity.Product;
-import ra.project_md04.model.entity.Roles;
-import ra.project_md04.model.entity.Users;
-import ra.project_md04.service.ICategoryService;
-import ra.project_md04.service.IProductService;
-import ra.project_md04.service.IRoleService;
-import ra.project_md04.service.IUserService;
+import ra.project_md04.model.dto.response.converter.UserConverter;
+import ra.project_md04.model.entity.*;
+import ra.project_md04.service.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +32,8 @@ public class AdminController {
 		private IProductService productService;
 		@Autowired
 		private IRoleService roleService;
+		@Autowired
+		private IOrderService orderService;
 
 	@GetMapping
 	public ResponseEntity<?> admin() {
@@ -41,15 +43,21 @@ public class AdminController {
 	// User controller
 
 	@GetMapping("/listUsers")
-	public ResponseEntity<List<Users>> getListUser(@RequestBody PageRequest pageRequest){
+	public ResponseEntity<List<UserResponse>> getListUser(@RequestBody PageRequest pageRequest){
 		List<Users> usersList = userService.getAllUser( pageRequest.getPage() - 1, pageRequest.getItemPage(), pageRequest.getSortBy(), pageRequest.getDirection()).getContent();
-		return new ResponseEntity<>(usersList, HttpStatus.OK);
+		List<UserResponse> userResponses = usersList.stream()
+				.map(UserConverter::toUserResponse)//lamda exprestion
+				.collect(Collectors.toList());
+		return new ResponseEntity<>(userResponses, HttpStatus.OK);
 	}
 
 	@GetMapping("/searchAndPaging")
-	public ResponseEntity<List<Users>> getUserWithSearchAndPage(@RequestBody PageRequest pageRequest){
+	public ResponseEntity<List<UserResponse>> getUserWithSearchAndPage(@RequestBody PageRequest pageRequest){
 		List<Users> content = userService.getUserPaging(pageRequest.getName(), pageRequest.getPage() - 1, pageRequest.getItemPage(), pageRequest.getSortBy(), pageRequest.getDirection()).getContent();
-		return new ResponseEntity<>(content, HttpStatus.OK);
+		List<UserResponse> userResponses = content.stream()
+				.map(UserConverter::toUserResponse)
+				.collect(Collectors.toList());
+		return new ResponseEntity<>(userResponses, HttpStatus.OK);
 	}
 
 	@PutMapping("/users/{userId}")
@@ -95,8 +103,10 @@ public class AdminController {
 	// Product Controller
 
 	@PutMapping("/products/{productId}")
-	public ResponseEntity<Product> updateProduct(@PathVariable Long productId,@RequestBody ProductRequest productRequest){
-		return new ResponseEntity<>(productService.update(productId,productRequest),HttpStatus.OK);
+	public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long productId,@RequestBody ProductRequest productRequest){
+		Product product = productService.update(productId,productRequest);
+		ProductResponse productResponse = ProductConverter.toProductResponse(product);
+		return new ResponseEntity<>(productResponse,HttpStatus.OK);
 	}
 
 	@DeleteMapping("/products/{productId}")
@@ -106,8 +116,10 @@ public class AdminController {
 	}
 
 	@PostMapping("/products")
-	public ResponseEntity<Product> insertProduct(@RequestBody ProductRequest productRequest){
-		return new ResponseEntity<>(productService.save(productRequest),HttpStatus.OK);
+	public ResponseEntity<ProductResponse> insertProduct(@RequestBody ProductRequest productRequest){
+		Product product = productService.save(productRequest);
+		ProductResponse productResponse = ProductConverter.toProductResponse(product);
+		return new ResponseEntity<>(productResponse,HttpStatus.OK);
 	}
 
 	@GetMapping("/products/{productId}")
@@ -128,6 +140,41 @@ public class AdminController {
 				.map(ProductConverter::toProductResponse)
 				.collect(Collectors.toList());
 		return new ResponseEntity<>(productResponses, HttpStatus.OK);
+	}
+
+	//Order
+
+	@GetMapping("/orders")
+	public ResponseEntity<List<Order>> getAllOrders() {
+		List<Order> orders = orderService.getAllOrders();
+		return new ResponseEntity<>(orders, HttpStatus.OK);
+	}
+
+	@GetMapping("/orders/{orderStatus}")
+	public ResponseEntity<List<OrderResponse>> getOrdersByStatus(@PathVariable OrderStatus orderStatus) {
+		List<Order> orders = orderService.getOrdersByStatus(orderStatus);
+		List<OrderResponse> orderResponseList = orders.stream()
+				.map(OrderConverter::toOrderResponse)
+				.collect(Collectors.toList());
+		return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+	}
+
+	@GetMapping("/order/{orderId}")
+	public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId) {
+		Order order = orderService.getOrderById(orderId);
+		OrderResponse orderResponse = OrderConverter.toOrderResponse(order);
+		return new ResponseEntity<>(orderResponse, HttpStatus.OK);
+	}
+
+	@PutMapping("/orders/status/{orderId}")
+	public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestBody UpdateOrderStatusRequest request) {
+		boolean result = orderService.updateOrderStatus(orderId, request.getOrderStatus());
+
+		if (result) {
+			return ResponseEntity.ok("Cập nhật trạng thái đơn hàng thành công!");
+		} else {
+			return ResponseEntity.badRequest().body("Cập nhật trạng thái đơn hàng thất bại.");
+		}
 	}
 
 }

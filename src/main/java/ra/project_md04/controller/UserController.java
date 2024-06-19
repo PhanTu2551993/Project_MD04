@@ -4,19 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ra.project_md04.constans.OrderStatus;
 import ra.project_md04.model.dto.request.*;
-import ra.project_md04.model.dto.response.AddressResponse;
-import ra.project_md04.model.dto.response.ShoppingCartResponse;
-import ra.project_md04.model.dto.response.WishListResponse;
+import ra.project_md04.model.dto.response.*;
 import ra.project_md04.model.dto.response.converter.AddressConverter;
+import ra.project_md04.model.dto.response.converter.OrderConverter;
 import ra.project_md04.model.dto.response.converter.ShoppingCartConverter;
-import ra.project_md04.model.entity.Address;
-import ra.project_md04.model.entity.Order;
-import ra.project_md04.model.entity.ShoppingCart;
-import ra.project_md04.model.entity.Users;
+import ra.project_md04.model.dto.response.converter.UserConverter;
+import ra.project_md04.model.entity.*;
 import ra.project_md04.service.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -45,9 +44,10 @@ public class UserController {
     }
 
     @PutMapping("/account")
-    public ResponseEntity<Users> updateUser(@RequestBody UpdateUserRequest updateUserRequest) {
+    public ResponseEntity<UserResponse> updateUser(@RequestBody UpdateUserRequest updateUserRequest) {
         Users updatedUser = userService.updateUser(updateUserRequest);
-        return ResponseEntity.ok(updatedUser);
+        UserResponse userResponses = UserConverter.toUserResponse(updatedUser);
+        return ResponseEntity.ok(userResponses);
     }
 
     @GetMapping("/account")
@@ -57,9 +57,10 @@ public class UserController {
     }
 
     @PostMapping("/account/addresses")
-    public ResponseEntity<Address> addNewAddress(@RequestBody AddressRequest addressRequest) {
+    public ResponseEntity<AddressResponse> addNewAddress(@RequestBody AddressRequest addressRequest) {
         Address newAddress = addressService.addNewAddress(addressRequest);
-        return new ResponseEntity<>(newAddress, HttpStatus.OK);
+        AddressResponse addressResponse = AddressConverter.toAddressResponse(newAddress);
+        return new ResponseEntity<>(addressResponse, HttpStatus.OK);
     }
 
     @GetMapping("/account/addresses")
@@ -115,6 +116,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/cart/checkout")
+    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest) {
+        Order order = orderService.placeOrder(orderRequest);
+        OrderResponse orderResponse = OrderConverter.toOrderResponse(order);
+        return ResponseEntity.ok(orderResponse);
+    }
+
     @PostMapping("/wish-list")
     public ResponseEntity<WishListResponse> addWishList(@RequestBody WishListRequest wishListRequest) {
         WishListResponse addedWishList = wishListService.addWishList(wishListRequest);
@@ -134,11 +142,39 @@ public class UserController {
         return ResponseEntity.ok().body("đã xóa thành công sản phẩm trong danh sách yêu thích có ID : " + wishListId);
     }
 
-    @PostMapping("/cart/checkout")
-    public ResponseEntity<Order> placeOrder(@RequestBody OrderRequest orderRequest) {
-        Order order = orderService.placeOrder(orderRequest);
-        return ResponseEntity.ok(order);
+    @GetMapping("/history")
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        List<Order> orders = orderService.getAllUserOrders();
+        List<OrderResponse> orderResponseList = orders.stream()
+                .map(OrderConverter::toOrderResponse)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
     }
 
+    @GetMapping("/history/{serialNumber}")
+    public ResponseEntity<OrderResponse> getHistory(@PathVariable String serialNumber) {
+        Order order = orderService.getOrderBySerialNumber(serialNumber);
+        OrderResponse orderResponse = OrderConverter.toOrderResponse(order);
+        return ResponseEntity.ok(orderResponse);
+    }
 
+    @GetMapping("/historyOrder/{orderStatus}")
+    public ResponseEntity<List<OrderResponse>> getOrdersByStatus(@PathVariable OrderStatus orderStatus) {
+        List<Order> orders = orderService.getHistoryOrdersByStatus(orderStatus);
+        List<OrderResponse> orderResponseList = orders.stream()
+                .map(OrderConverter::toOrderResponse)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(orderResponseList, HttpStatus.OK);
+    }
+
+    @PutMapping("/history/cancel/{orderId}")
+    public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
+        Boolean result = orderService.cancelOrder(orderId);
+
+        if (result) {
+            return ResponseEntity.ok("Đơn hàng đã được hủy thành công!");
+        } else {
+            return ResponseEntity.badRequest().body("Không thể hủy đơn hàng. Đơn hàng không ở trạng thái chờ xác nhận.");
+        }
+    }
 }

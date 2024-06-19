@@ -17,6 +17,7 @@ import ra.project_md04.service.IProductService;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 public class ProductServiceImpl implements IProductService {
@@ -64,7 +65,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public Product save(ProductRequest productRequest) {
         Product product = new Product();
-        product.setSku(productRequest.getSku());
+        product.setSku(UUID.randomUUID().toString());
         product.setProductName(productRequest.getProductName());
         product.setDescription(productRequest.getDescription());
         product.setImage(productRequest.getImage());
@@ -79,7 +80,6 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public Product update(Long productId,ProductRequest productRequest) {
         Product currentProduct = findProductById(productId);
-        currentProduct.setSku(productRequest.getSku());
         currentProduct.setProductName(productRequest.getProductName());
         currentProduct.setDescription(productRequest.getDescription());
         currentProduct.setImage(productRequest.getImage());
